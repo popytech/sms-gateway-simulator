@@ -7,9 +7,12 @@
 
 **Stateless API · Delivery lifecycle · OTP · HMAC webhooks · OpenAPI · Docker · CI**
 
+[![CI](https://github.com/popytech/sms-gateway-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/popytech/sms-gateway-simulator/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-111111?style=for-the-badge)](./LICENSE)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fpopytech%2Fsms-gateway-simulator&env=SIMULATOR_SECRET,SIMULATOR_EXPOSE_OTP&project-name=sms-gateway-simulator&repository-name=sms-gateway-simulator)
 </div>
 
 ---
@@ -135,7 +138,27 @@ npm test
 npm run build
 ```
 
-The same pipeline runs with GitHub Actions.
+The same pipeline runs with GitHub Actions and the current `main` branch passes the full quality suite.
+
+## Deploy
+
+Use the **Deploy with Vercel** button above or import this repository into any Node.js-compatible platform.
+
+Required hosted variable:
+
+```env
+SIMULATOR_SECRET=<32+ random characters>
+```
+
+Optional demo settings:
+
+```env
+SIMULATOR_EXPOSE_OTP=true
+SIMULATOR_API_KEY=
+SIMULATOR_WEBHOOK_SECRET=
+```
+
+For a public playground, leave `SIMULATOR_API_KEY` unset. For a protected sandbox, set it and send `Authorization: Bearer <key>`.
 
 ## Docker
 

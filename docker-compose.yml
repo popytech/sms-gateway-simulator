@@ -1,0 +1,8 @@
+services:
+  simulator:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      SIMULATOR_SECRET: local-docker-secret-change-me-123456789
+      SIMULATOR_EXPOSE_OTP: "true"

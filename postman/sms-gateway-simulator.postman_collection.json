@@ -1,0 +1,27 @@
+{
+  "info": {
+    "name": "SMS Gateway Simulator",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [{"key":"baseUrl","value":"http://localhost:3000"}],
+  "item": [
+    {
+      "name": "Send SMS",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {"mode":"raw","raw":"{\n  \"to\": \"+224612345678\",\n  \"body\": \"Hello from the simulator\",\n  \"sender_id\": \"DEMO\"\n}"},
+        "url": {"raw":"{{baseUrl}}/api/v1/messages","host":["{{baseUrl}}"],"path":["api","v1","messages"]}
+      }
+    },
+    {
+      "name": "Send OTP",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {"mode":"raw","raw":"{\n  \"to\": \"+224612345678\",\n  \"ttl_seconds\": 300,\n  \"length\": 6\n}"},
+        "url": {"raw":"{{baseUrl}}/api/v1/otp/send","host":["{{baseUrl}}"],"path":["api","v1","otp","send"]}
+      }
+    }
+  ]
+}
