@@ -5,7 +5,7 @@
 
 ### Test SMS, OTP and webhook integrations without a telecom provider.
 
-**Stateless API · Delivery lifecycle · OTP · HMAC webhooks · OpenAPI · Docker · CI**
+**Stateless API · Delivery lifecycle · OTP · Provider failures · Inbound SMS · SMPP fixtures · HMAC webhooks · Docker · CI**
 
 [![CI](https://github.com/popytech/sms-gateway-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/popytech/sms-gateway-simulator/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
@@ -21,7 +21,7 @@
 
 Teams integrating SMS often need provider credentials, live credits and real phone numbers just to test basic application behavior. **SMS Gateway Simulator** provides a safe local/public sandbox for those development flows.
 
-It does **not** send real SMS and contains no operator credentials.
+It does **not** send real SMS and contains no operator credentials. Provider names and error codes are simulator profiles only; they are not official operator specifications.
 
 ## What it simulates
 
@@ -30,8 +30,13 @@ It does **not** send real SMS and contains no operator credentials.
 - final delivery (`delivered` / `failed`)
 - configurable latency and failure rate
 - forced delivery/failure scenarios for tests
+- simulated provider profiles (`generic`, `orange`, `mtn`, `moov`)
+- simulated HTTP `429` rate limits and retry hints
+- batch sending for up to 100 messages
+- inbound SMS events with HMAC signatures
 - OTP generation, expiry and verification
 - signed lifecycle/webhook events
+- SMPP-like JSON fixtures for integration tests
 - optional Bearer API key protection
 - E.164 destination validation
 
@@ -48,7 +53,7 @@ See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 ```bash
 git clone https://github.com/popytech/sms-gateway-simulator.git
 cd sms-gateway-simulator
-npm install
+npm ci
 cp .env.example .env.local
 npm run dev
 ```
@@ -70,7 +75,8 @@ curl -X POST http://localhost:3000/api/v1/messages \
   -d '{
     "to": "+224612345678",
     "body": "Your verification code is 482901",
-    "sender_id": "DEMO"
+    "sender_id": "DEMO",
+    "provider": "generic"
   }'
 ```
 
@@ -88,6 +94,7 @@ The status moves from `queued` → `sent` → `delivered` or `failed` based on t
 {
   "to": "+224612345678",
   "body": "Testing failure handling",
+  "provider": "mtn",
   "simulation": {
     "latency_ms": 500,
     "delivery_delay_ms": 1000,
@@ -95,6 +102,29 @@ The status moves from `queued` → `sent` → `delivered` or `failed` based on t
   }
 }
 ```
+
+## Simulate a rate limit
+
+```json
+{
+  "to": "+224612345678",
+  "body": "Testing retry logic",
+  "simulation": {
+    "rate_limited": true,
+    "retry_after_seconds": 30
+  }
+}
+```
+
+The API responds with HTTP `429` and a simulator retry hint.
+
+## Batch messaging
+
+`POST /api/v1/messages/batch` accepts between 1 and 100 message objects and returns per-message acceptance results.
+
+## Inbound SMS
+
+`POST /api/v1/inbound` creates a simulated `message.received` event and returns its HMAC signature so webhook consumers can be tested without a live operator connection.
 
 ## OTP
 
@@ -114,12 +144,22 @@ Then verify with `POST /api/v1/otp/verify` using the returned `id` and code.
 
 Lifecycle events returned by `/api/v1/messages/{id}/events` include an HMAC-SHA256 signature. The signing endpoint is also available at `/api/v1/webhooks/sign`.
 
+## Provider profiles and SMPP fixtures
+
+`GET /api/v1/providers` exposes the simulator-only provider failure catalogs.
+
+`GET /api/v1/smpp/fixtures` returns SMPP-like JSON examples for `submit_sm`, `submit_sm_resp` and delivery receipts. These fixtures model common concepts for application tests; they are not raw binary PDUs.
+
 ## API reference
 
 - `GET /api/health`
 - `POST /api/v1/messages`
+- `POST /api/v1/messages/batch`
 - `GET /api/v1/messages/{id}`
 - `GET /api/v1/messages/{id}/events`
+- `POST /api/v1/inbound`
+- `GET /api/v1/providers`
+- `GET /api/v1/smpp/fixtures`
 - `POST /api/v1/otp/send`
 - `POST /api/v1/otp/verify`
 - `POST /api/v1/webhooks/sign`
@@ -138,7 +178,7 @@ npm test
 npm run build
 ```
 
-The same pipeline runs with GitHub Actions and the current `main` branch passes the full quality suite.
+The same pipeline runs with GitHub Actions.
 
 ## Deploy
 
@@ -172,15 +212,27 @@ The Docker build uses Next.js standalone output. Vercel uses the native Next.js 
 
 Read [`SECURITY.md`](./SECURITY.md). This is a development simulator, not a production SMS gateway.
 
-## Roadmap
+## MVP status
 
-- [ ] SMPP packet fixture mode
-- [ ] provider-specific error catalogs
-- [ ] rate-limit simulation
-- [ ] batch messaging endpoint
+- [x] SMS lifecycle simulator
+- [x] OTP simulator
+- [x] signed webhook events
+- [x] provider-specific simulator error catalogs
+- [x] rate-limit simulation
+- [x] batch messaging endpoint
+- [x] inbound SMS simulator
+- [x] SMPP-like fixture mode
 - [x] SDK examples (Node/Python/PHP)
 - [x] Postman collection
-- [ ] inbound SMS simulator
+- [x] Docker + reproducible CI
+
+## Next iterations
+
+- [ ] raw SMPP PDU codec fixtures
+- [ ] configurable persistent event history
+- [ ] provider scenario presets UI
+- [ ] webhook delivery/retry executor
+- [ ] load-test scenarios
 
 ## License
 
