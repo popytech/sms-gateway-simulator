@@ -47,7 +47,7 @@ Content-Type: application/json
 }`}</pre>
 
       <h2>Failure & rate-limit scenarios</h2>
-      <p>Force <code>final_status: "failed"</code> to test downstream failure handling. Set <code>rate_limited: true</code> and <code>retry_after_seconds</code> to test HTTP 429 retry logic.</p>
+      <p>Force <code>final_status</code> to <code>failed</code> to test downstream failure handling. Set <code>rate_limited: true</code> and <code>retry_after_seconds</code> to test HTTP 429 retry logic.</p>
 
       <h2>Provider profiles</h2>
       <p>The simulator exposes generic provider profiles and failure-code catalogs for integration testing only. They are not official telecom specifications.</p>
